@@ -1,37 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import { Button, Grid } from '@mui/material';
-import EventCard from '../components/eventCard/eventCard';
-import axios from 'axios';
+// src/pages/Events.js
+import React from 'react';
+import { Box, Typography } from '@mui/material';
+import CreateEvent from '../components/createEvent/createEvent';
+import EventList from '../components/eventList';
 
 const Events = () => {
-  const [events, setEvents] = useState([]);
-
-  useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        const response = await axios.get('http://localhost:5000/api/events');
-        setEvents(response.data);
-      } catch (error) {
-        console.error('Erro ao buscar eventos', error);
-      }
-    };
-
-    fetchEvents();
-  }, []);
-
-  return (
-    <div>
-      <h2>Eventos</h2>
-      <Button variant="contained" color="primary" href="/create-event">Criar Evento</Button>
-      <Grid container spacing={3}>
-        {events.map((event) => (
-          <Grid item key={event._id} xs={12} sm={6} md={4}>
-            <EventCard event={event} />
-          </Grid>
-        ))}
-      </Grid>
-    </div>
-  );
+    return (
+        <Box sx={{ padding: 2 }}>
+            <CreateEvent />
+            <Typography variant="h4">Eventos</Typography>
+            <Typography variant="body1">Aqui você verá todos os eventos criados.</Typography>
+            <EventList />
+        </Box>
+    );
 };
 
 export default Events;

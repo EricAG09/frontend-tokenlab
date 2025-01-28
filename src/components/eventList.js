@@ -1,7 +1,7 @@
 // src/components/EventList.js
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import CreateEvent from './CreateEvent';
+import CreateEvent from './createEvent/createEvent';
 
 const EventList = () => {
     const [events, setEvents] = useState([]);
@@ -20,9 +20,7 @@ const EventList = () => {
         }
     };
 
-    const handleCreateEvent = () => {
-        setShowForm(true);
-    };
+    
 
     const handleCloseForm = () => {
         setShowForm(false);
@@ -32,7 +30,7 @@ const EventList = () => {
     return (
         <div>
             <h2>Lista de Eventos</h2>
-            <button onClick={handleCreateEvent}>Criar Novo Evento</button>
+            
             {showForm && <CreateEvent onClose={handleCloseForm} />}
             <ul>
                 {events.map(event => (
