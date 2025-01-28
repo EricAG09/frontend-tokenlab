@@ -1,19 +1,17 @@
-// src/components/EventCard.js
+// src/components/eventCard/EventCard.js
 import React from 'react';
-import { Card, CardContent, Typography, CardActions, Button } from '@mui/material';
+import { Card, CardContent, Typography } from '@mui/material';
 
 const EventCard = ({ event }) => {
   return (
     <Card>
       <CardContent>
-        <Typography variant="h5">{event.title}</Typography>
-        <Typography variant="body2">{event.description}</Typography>
-        <Typography variant="body1">{event.location}</Typography>
-        <Typography variant="body2">{event.date}</Typography>
+        <Typography variant="h5">{event.description}</Typography>
+        <Typography color="textSecondary">
+          Início: {new Date(event.startTime).toLocaleString()}<br />
+          Término: {new Date(event.endTime).toLocaleString()}
+        </Typography>
       </CardContent>
-      <CardActions>
-        <Button size="small" color="primary">Ver Detalhes</Button>
-      </CardActions>
     </Card>
   );
 };

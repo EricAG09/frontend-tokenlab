@@ -7,13 +7,16 @@ const Events = () => {
   const [events, setEvents] = useState([]);
 
   useEffect(() => {
-    axios.get('http://localhost:5000/api/events')
-      .then((response) => {
+    const fetchEvents = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/api/events');
         setEvents(response.data);
-      })
-      .catch((error) => {
+      } catch (error) {
         console.error('Erro ao buscar eventos', error);
-      });
+      }
+    };
+
+    fetchEvents();
   }, []);
 
   return (

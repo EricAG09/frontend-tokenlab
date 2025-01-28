@@ -13,8 +13,9 @@ const Navbar = () => {
   // Links da navbar
   const navLinks = [
     { label: "Home", path: "/" },
+    { label: "Login", path: "/login" },
     { label: "Eventos", path: "/events" },
-    { label: "Sobre", path: "/about" },
+ 
   ];
 
   // Menu móvel (Drawer)

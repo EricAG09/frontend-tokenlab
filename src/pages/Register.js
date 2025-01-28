@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import { Box, Button, TextField, Typography, Link } from "@mui/material";
+import { Box, Button, TextField, Typography, Link, CircularProgress } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import axios from "axios"; // Importando o axios
 
 const Register = () => {
   const navigate = useNavigate();
@@ -10,15 +11,29 @@ const Register = () => {
     password: "",
     confirmPassword: "",
   });
+  const [errorMessage, setErrorMessage] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Lógica para cadastrar o usuário
-    console.log("Register Form Data: ", form);
+  const handleSubmit = async (e) => {
+    e.preventDefault(); // Previne o comportamento padrão do formulário
+
+    setLoading(true); // Inicia o carregamento ao submeter o formulário
+    try {
+      const response = await axios.post('http://localhost:8000/api/auth/register', form);
+      localStorage.setItem('token', response.data.token);
+      navigate('/login'); // Redireciona após login
+    } catch (error) {
+      if (error.response) {
+        setErrorMessage(error.response.data.message || 'Erro ao fazer registrar');
+      } else {
+        setErrorMessage('Erro de rede ou servidor');
+      }
+    }
+    setLoading(false); 
   };
 
   return (
@@ -29,7 +44,25 @@ const Register = () => {
       justifyContent="center"
       minHeight="100vh"
       p={3}
+      sx={{
+        backgroundColor: "#E3F2FD", // Azul claro
+        backgroundImage: "linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%)", // Gradiente sutil
+      }}
     >
+      <Box
+              display="flex"
+              flexDirection="column"
+              alignItems="center"
+              justifyContent="center"
+              marginTop={-40}
+              maxWidth={400}
+              p={4}
+              borderRadius={2}
+              boxShadow={4} // Suave sombra
+              sx={{
+                backgroundColor: "white",
+              }}
+            >
       <Typography variant="h4" mb={3}>
         Cadastro
       </Typography>
@@ -67,8 +100,13 @@ const Register = () => {
             value={form.confirmPassword}
             onChange={handleChange}
           />
+          {errorMessage && (
+            <Typography color="error" variant="body2">
+              {errorMessage}
+            </Typography>
+          )}
           <Button type="submit" variant="contained" color="primary" fullWidth>
-            Cadastrar
+                          {loading ? <CircularProgress size={24} color="inherit" /> : "Cadastrar"}
           </Button>
         </Box>
       </form>
@@ -80,6 +118,7 @@ const Register = () => {
       >
         Já tem uma conta? Faça login
       </Link>
+      </Box>
     </Box>
   );
 };
