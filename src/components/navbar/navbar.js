@@ -1,10 +1,13 @@
+// src/components/navbar/navbar.js
 import React, { useState } from "react";
 import { AppBar, Toolbar, IconButton, Typography, Box, Button, Drawer, List, ListItem } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import { Link } from "react-router-dom";
+import { useUser } from "../../context/useContext";
 
 const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { user, logout } = useUser(); // Usando o hook de contexto
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -13,10 +16,23 @@ const Navbar = () => {
   // Links da navbar
   const navLinks = [
     { label: "Home", path: "/" },
-    { label: "Login", path: "/login" },
     { label: "Eventos", path: "/events" },
- 
   ];
+
+  // Se o usuário estiver logado, exibe o nome e o botão de logout
+  if (user) {
+    navLinks.push({
+      label: `Olá, ${user?.name}`, // Exibe o nome do usuário
+      path: "/login", // Caminho do perfil
+    });
+    navLinks.push({
+      label: "Logout",
+      path: "/logout",
+      onClick: logout, // Chama a função de logout
+    });
+  } else {
+    navLinks.push({ label: "Login", path: "/login" });
+  }
 
   // Menu móvel (Drawer)
   const drawer = (
@@ -31,6 +47,7 @@ const Navbar = () => {
               component={Link}
               to={item.path}
               sx={{ textAlign: "center", width: "100%" }}
+              onClick={item.onClick ? item.onClick : null} // Verifica se tem uma função onClick (logout)
             >
               {item.label}
             </Button>
@@ -55,6 +72,7 @@ const Navbar = () => {
                 component={Link}
                 to={item.path}
                 sx={{ color: "#fff" }}
+                onClick={item.onClick ? item.onClick : null} // Verifica se tem uma função onClick (logout)
               >
                 {item.label}
               </Button>

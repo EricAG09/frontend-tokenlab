@@ -6,6 +6,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Events from './pages/Events';
 import { UserProvider } from './context/useContext';
+import Logout from './pages/logout';
 
 function App() {
   return (
@@ -17,10 +18,12 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/events" element={<Events />} />
+        <Route path="/logout" element={<Logout />} />
       </Routes>
       </ UserProvider>
     </Router>
   );
 }
+
 
 export default App;

@@ -1,15 +1,17 @@
+// src/pages/Login.js
 import React, { useState, useEffect } from "react";
 import { Box, Button, TextField, Typography, Link, CircularProgress } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { loginUser } from "../services/api";
+
 
 const Login = () => {
     const navigate = useNavigate();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
-    const [errorMessage, setErrorMessage] = useState('');
-
+    const [errorMessage, setErrorMessage] = useState('');// Considerando que o nome é obtido ao fazer login
+    
     // Limpa a mensagem de erro quando o usuário começa a digitar
     useEffect(() => {
         if (email && password) {
@@ -21,13 +23,22 @@ const Login = () => {
         e.preventDefault();
         setLoading(true);
         setErrorMessage('');
-
+    
         try {
-            const data = await loginUser (email, password);
-            console.log('Usuário logado:', data);
-            navigate('/'); // Redireciona após login
+            const response = await loginUser (email, password);
+            console.log('Resposta do login:', response); // Verifique a resposta
+    
+            if (response.token) {
+                localStorage.setItem('authToken', response.token); 
+                localStorage.setItem('username', response.name); 
+                alert(`Olá, ${response.username}!`); 
+                navigate('/'); // Redirecionar após login
+            } else {
+                setErrorMessage('Falha no login. Tente novamente.');
+            }
         } catch (error) {
-            setErrorMessage(error.message || 'Erro ao fazer login');
+            console.error('Erro ao fazer login:', error); // Log do erro
+            setErrorMessage(error.response?.data?.message || 'Erro ao fazer login');
         } finally {
             setLoading(false);
         }
@@ -42,7 +53,7 @@ const Login = () => {
             minHeight="100vh"
             p={3}
             sx={{
-                backgroundColor: "#E3F2FD",
+                backgroundColor: "#3F2FD",
                 backgroundImage: "linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%)",
             }}
         >

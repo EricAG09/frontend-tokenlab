@@ -1,6 +1,6 @@
-// src/components/CreateEvent.js
 import React, { useState } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 import {
     Dialog,
     DialogTitle,
@@ -9,21 +9,24 @@ import {
     TextField,
     Button,
     Typography,
+    CircularProgress,
 } from '@mui/material';
+import {jwtDecode} from 'jwt-decode';
 
 const CreateEvent = () => {
-    const [open, setOpen] = useState(false); // Estado para controlar a visibilidade do diálogo
+    const [open, setOpen] = useState(false);
     const [description, setDescription] = useState('');
     const [startTime, setStartTime] = useState('');
     const [endTime, setEndTime] = useState('');
+    const [loading, setLoading] = useState(false);  // Novo estado para loading
+    const navigate = useNavigate();
 
-    const handleClickOpen = () => {
-        setOpen(true); // Abre a caixa de diálogo
+    const handleOpen = () => {
+        setOpen(true);
     };
 
     const handleClose = () => {
-        setOpen(false); // Fecha a caixa de diálogo
-        // Limpa os campos após fechar
+        setOpen(false);
         setDescription('');
         setStartTime('');
         setEndTime('');
@@ -31,49 +34,70 @@ const CreateEvent = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        // Validação das datas
+        if (new Date(startTime) >= new Date(endTime)) {
+            alert('A data de início deve ser anterior à data de término.');
+            return;
+        }
+
+        const token = localStorage.getItem('token');
+        if (!token) {
+            alert('Erro: Usuário não autenticado.');
+            return;
+        }
+
+        let decoded;
         try {
-            const startDate = new Date(startTime);
-            const endDate = new Date(endTime);
+            decoded = jwtDecode(token); // Decodifica o token
+        } catch (error) {
+            console.error('Erro ao decodificar o token:', error);
+            alert('Token inválido. Faça login novamente.');
+            return;
+        }
 
-            if (isNaN(startDate) || isNaN(endDate)) {
-                alert('Por favor, insira datas válidas.');
-                return;
-            }
+        const userId = decoded.userId; // Obtém o ID do usuário
 
-            if (startDate >= endDate) {
-                alert('A data de término deve ser posterior à data de início.');
-                return;
-            }
+        setLoading(true);  // Ativa o loading ao submeter o evento
 
-            const response = await axios.post('http://localhost:8000/api/events', {
-                description,
-                startTime: startDate.toISOString(),
-                endTime: endDate.toISOString(),
-            });
+        try {
+            const response = await axios.post(
+                'http://localhost:8000/api/events',
+                {
+                    description,
+                    startTime: new Date(startTime).toISOString(),
+                    endTime: new Date(endTime).toISOString(),
+                    createdBy: userId,
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
 
-            if (response && response.data) {
-                alert('Evento criado com sucesso!'); // Alerta de sucesso
-                handleClose(); // Fecha a caixa de diálogo após criar o evento
-            } else {
-                alert('Erro ao criar evento: resposta inválida do servidor.');
+            if (response.status === 201) {
+                alert('Evento criado com sucesso!');
+                handleClose();  // Fecha o modal e limpa os campos
+                navigate('/events'); // Redireciona para a página de eventos
             }
         } catch (error) {
-            if (error.response) {
-                console.error('Erro ao criar evento:', error.response.data);
-                alert('Erro ao criar evento: ' + error.response.data.message);
-            } else {
-                console.error('Erro ao criar evento:', error);
-                alert('Erro ao criar evento: ' + error.message);
-            }
+            console.error('Erro ao criar evento:', error);
+            alert('Erro ao criar evento: ' + (error.response?.data?.message || error.message));
+        } finally {
+            setLoading(false);  // Desativa o loading
         }
     };
 
     return (
         <div>
-            <Button variant="contained" color="primary" onClick={handleClickOpen}>
-                Criar Novo Evento
+            {/* Botão para abrir o modal */}
+            <Button variant="contained" color="primary" onClick={handleOpen}>
+                Criar Evento
             </Button>
-            <Dialog open={open} >
+
+            {/* Modal */}
+            <Dialog open={open} onClose={handleClose}>
                 <DialogTitle>Criar Novo Evento</DialogTitle>
                 <DialogContent>
                     <Typography variant="body1" gutterBottom>
@@ -100,21 +124,7 @@ const CreateEvent = () => {
                         onChange={(e) => setStartTime(e.target.value)}
                         required
                         InputLabelProps={{
-                            shrink: true, // Faz o label ficar acima do campo quando há valor
-                        }}
-                        helperText="Selecione a data e hora de início do evento."
-                        sx={{
-                            '& .MuiOutlinedInput-root': {
-                                '& fieldset': {
-                                    borderColor: 'gray', // Cor da borda
-                                },
-                                '&:hover fieldset': {
-                                    borderColor: 'blue', // Cor da borda ao passar o mouse
-                                },
-                                '&.Mui-focused fieldset': {
-                                    borderColor: 'blue', // Cor da borda quando o campo está focado
-                                },
-                            },
+                            shrink: true,
                         }}
                     />
                     <TextField
@@ -129,28 +139,18 @@ const CreateEvent = () => {
                         InputLabelProps={{
                             shrink: true,
                         }}
-                        helperText="Selecione a data e hora de término do evento."
-                        sx={{
-                            '& .MuiOutlinedInput-root': {
-                                '& fieldset': {
-                                    borderColor: 'gray',
-                                },
-                                '&:hover fieldset': {
-                                    borderColor: 'blue',
-                                },
-                                '&.Mui-focused fieldset': {
-                                    borderColor: 'blue',
-                                },
-                            },
-                        }}
                     />
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={handleClose} color="secondary">
                         Cancelar
                     </Button>
-                    <Button onClick={handleSubmit} color="primary">
-                        Criar Evento
+                    <Button 
+                        onClick={handleSubmit} 
+                        color="primary" 
+                        disabled={loading} // Desabilita o botão enquanto está carregando
+                    >
+                        {loading ? <CircularProgress size={24} /> : 'Criar Evento'}
                     </Button>
                 </DialogActions>
             </Dialog>
